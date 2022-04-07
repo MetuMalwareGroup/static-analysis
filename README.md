@@ -37,7 +37,40 @@
     ```
 
 # The SLAM
-1.  We split the assesmbly intructions in assembly pool with [prepare_slam_data.py](./prepare_slam_data.py) into lines with labels. static-analysis
+1.  We split the assembly instructions in assembly pool with [prepare_slam_data.py](./prepare_slam_data.py) into single line containing files.
+2. The files form our assembly pool which we use sentences as sequences for the SLAM.  
+3.  We constructed The SLAM  
+    3.1 With n-grams as:
+    ```
+    model = tf.keras.Sequential([
+    layers.Embedding(max_features+1, embedding_dim),
+    layers.Bidirectional(layers.LSTM(128,dropout = 0.5, recurrent_dropout = 0.5, return_sequences=True)),
+    layers.Bidirectional(layers.LSTM(128,dropout = 0.5, recurrent_dropout = 0.5, return_sequences=True)),
+    layers.Dropout(0.5),
+    layers.GlobalMaxPooling1D(),
+    layers.Dropout(0.5),
+    layers.Dense(128),
+    layers.Dropout(0.5),
+    layers.Dense(1)])
+    ```
+    3.2 With Word2Vec as: 
+    ```
+    model = Sequential()  
+    model.add(Embedding(input_dim=vocab_size,
+                    output_dim=embedding_size,
+                    weights=[w2v_weights],
+                    input_length=MAX_SEQUENCE_LENGTH,
+                    mask_zero=True,
+                    trainable=False))
+    model.add(Bidirectional(LSTM(128, return_sequences=True)))
+    model.add(Bidirectional(LSTM(128, return_sequences=True)))
+    model.add(Bidirectional(LSTM(128,)))
+    model.add(Dropout(0.5))
+    model.add(Dense(128))
+    model.add(Dropout(0.5))
+    model.add(Dense(1, activation='sigmoid'))
+    ```
+    3.3 
 Firstly,you should use bin2op.py for converting binary files to opcode file.Then, in first project,...
 
 
