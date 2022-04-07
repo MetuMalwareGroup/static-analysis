@@ -1,13 +1,43 @@
-# Creating dataset for DLAM
+# The DLAM
 1. Our study extracts assembly code using an open-source disassembler to create an opcode sequence as output.  
-  1.1.  Extract asssembly instructions with [extract_assembly.py](https://github.com/MetuMalwareGroup/static-analysis/blob/main/extract_assembly.py) which internally uses [bin2op.py](https://github.com/MetuMalwareGroup/static-analysis/blob/main/bin2op.py)  
+  1.1.  Extract asssembly instructions with [create_dlam_dataset.py](./create_dlam_dataset.py) which internally uses [bin2op.py](./bin2op.py)  
   1.2.  Save asssembly intsructions in seperate files.  
-  1.3.  These actions may be done using `python extract_assembly.py --source <Dir_With_PE32_Files> --destination <Dir_to_Save_Output>`  
-2. As shown in ![figure](https://github.com/MetuMalwareGroup/static-analysis/blob/main/pipeline.jpeg) we merge 
-4. Third item
-5. Our study extracts assembly code using an open-source disassembler to create an opcode sequence as output. We used the output as our raw data to create a language model assisted with word embedding, just like processing natural language. Using this language model, we aim to adopt polarity detection methods to identify the intention of an executable file using the labels as malicious and benign. Hence, we plan to detect whether it is malicious or benign with our proposed language model.
+  1.3.  These actions may be done using `python create_dlam_dataset.py --source <Dir_With_PE32_Files> --destination <Dir_to_Save_Output>`  
+2. We name the directory that assembly outputs reside as  ***assembly pool***.
+3. As shown in ![figure](./pipeline.jpeg) we processed assembly outputs with `custom_standardization` function in [custom_standardization.py](./custom_standardization.py). 
+4. To create assembly pool which we will use in the DLAM, first we converted opcode sequences to vectorized form with the layer 
+    ```
+    vectorize_layer = TextVectorization(
+      standardize=custom_standardization,
+      max_tokens=max_features,
+      output_mode='int',
+      pad_to_max_tokens=True,
+      ngrams=ngrams,
+      output_sequence_length=sequence_length
+      )
+    ```   
+      This layer gives us 
+    ```
+      Vectorized opcode sequences (<tf.Tensor: shape=(1, 1024),   dtype=int64, numpy=array([[111,  17,  40, ...,  94,  79,    82]])>, <tf.Tensor: shape=(), dtype=int32, numpy=1>)
+    ```
+    after adaptation `vectorize_layer.adapt(train_text)`  
+4. The training, validation and testing dataset seperation and preparation may be seen in [DLAM_TEXT_CLASSIFICATION.html](./00_of_text_classification_dlam.html). 
+5.  The DLAM which we constructed as  
+    ```
+    model = tf.keras.Sequential([
+    layers.Embedding(max_features+1, embedding_dim),
+    layers.Bidirectional(layers.LSTM(128,dropout = 0.5, recurrent_dropout = 0.5, return_sequences=True)),
+    layers.Bidirectional(layers.LSTM(128,dropout = 0.5, recurrent_dropout = 0.5, return_sequences=True)),
+    layers.Dropout(0.5),
+    layers.GlobalMaxPooling1D(),
+    layers.Dropout(0.5),
+    layers.Dense(128),
+    layers.Dropout(0.5),
+    layers.Dense(1)])
+    ```
 
-static-analysis
+# The SLAM
+1.  We split the assesmbly intructions in assembly pool with [prepare_slam_data.py](./prepare_slam_data.py) into lines with labels. static-analysis
 Firstly,you should use bin2op.py for converting binary files to opcode file.Then, in first project,...
 
 
