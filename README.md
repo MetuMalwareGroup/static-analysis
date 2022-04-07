@@ -67,7 +67,7 @@ tokenizer = GPT2Tokenizer.from_pretrained(pretrained_model_name_or_path='gpt-2')
 ```
 3. Create model using [binary_classification-GPT-2.py](./binary_classification-GPT-2.py) with model_config, model, and tokenizer.
 
-# **BBUM **
+# **BBUM**
 
 1. Use ***Sentences as a sequence*** dataset to feed the model.
 2. Download pre_trained_outputs folder of BERT‘s using
